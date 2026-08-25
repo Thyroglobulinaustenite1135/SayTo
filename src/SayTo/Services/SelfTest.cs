@@ -44,15 +44,16 @@ public static class SelfTest
 
             var sw = Stopwatch.StartNew();
             using var engine = new RecognitionEngine();
-            engine.LoadModel(lang);
-            Log($"model loaded in {sw.Elapsed.TotalSeconds:F1}s  ({ModelCatalog.ModelPath(lang)})");
+            var model = ModelCatalog.Get(lang);
+            engine.LoadModel(lang, model.Id);
+            Log($"model loaded in {sw.Elapsed.TotalSeconds:F1}s  ({ModelCatalog.PathOf(model.Id)})");
 
             string finalText = "";
             string lastPartial = "";
             engine.Partial += t => lastPartial = t;
             engine.Final += t => { finalText = (finalText + " " + t).Trim(); Log($"final: {t}"); };
 
-            engine.StartSession(lang);
+            engine.StartSession(lang, model.Id);
             sw.Restart();
 
             var pcm = ReadAs16kMono16(wav);

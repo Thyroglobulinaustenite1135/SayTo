@@ -24,8 +24,9 @@ SayTo is a lightweight, portable dictation tool. Press a hotkey anywhere in Wind
 - ⌨️ **Works in every app** — Word, browsers, chat apps… press the global shortcut and talk
 - 🔒 **100% offline** — powered by [Vosk](https://alphacephei.com/vosk/); no audio ever leaves your device
 - 🇮🇷 **Persian & English** — switch recognition language with one click
+- 💪 **Two model tiers per language** — compact models by default, optional accurate models (fa 1 GB / en 1.8 GB) downloadable and manageable from Settings
 - 🪶 **Portable** — a single folder, no installer, no admin rights; runs from a USB stick
-- 🌗 **Modern UI** — dark/light theme, live waveform, bilingual interface (Fa/En), RTL-safe text
+- 🌗 **Modern UI** — dark/light theme, live waveform, bilingual interface (Fa/En), RTL dictation text
 - ⏱️ **Auto-stop** — finishes automatically after a configurable moment of silence
 
 ## Download
@@ -87,7 +88,9 @@ scripts/              build.ps1, asset generators, test WAV maker
 
 - **C# / .NET 9 WPF** — single self-contained exe
 - **[Vosk 0.3.38](https://github.com/alphacep/vosk-api)** (Apache-2.0) — offline Kaldi-based recognition
-- Models: `vosk-model-small-fa-0.42`, `vosk-model-small-en-us-0.15` (Apache-2.0, from [alphacephei.com](https://alphacephei.com/vosk/models))
+- Models (Apache-2.0, from [alphacephei.com](https://alphacephei.com/vosk/models)):
+  compact `vosk-model-small-fa-0.42` / `vosk-model-small-en-us-0.15` (default),
+  accurate `vosk-model-fa-0.5` / `vosk-model-en-us-0.22` (optional, manageable in Settings)
 - **NAudio 3.0** — microphone capture (16 kHz mono)
 - **[Vazirmatn](https://github.com/rastikerdar/vazirmatn)** font (OFL) for the Persian UI
 

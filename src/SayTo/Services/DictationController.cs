@@ -41,6 +41,9 @@ public sealed class DictationController : IDisposable
 
     public bool IsModelReady(string lang) => _engine.IsModelLoaded(lang);
 
+    public string ActiveModelId() =>
+        Lang == "en" ? Settings.ActiveEnModel : Settings.ActiveFaModel;
+
     public async Task StartAsync(DictationMode mode, IntPtr target)
     {
         if (State != DictationState.Idle) return;
@@ -52,12 +55,15 @@ public sealed class DictationController : IDisposable
         _hasSpoken = false;
         _autoStopSeconds = Settings.AutoStopOnSilence ? Settings.AutoStopSeconds : 0;
 
+        // prefer the user's active model, fall back to the compact one
+        var modelId = ModelCatalog.ResolveId(Lang, ActiveModelId());
+
         try
         {
             await Task.Run(() =>
             {
-                _engine.LoadModel(Lang);
-                _engine.StartSession(Lang);
+                _engine.LoadModel(Lang, modelId);
+                _engine.StartSession(Lang, modelId);
             });
         }
         catch (Exception)

@@ -9,6 +9,7 @@ public sealed class RecognitionEngine : IDisposable
 {
     private Model? _model;
     private string? _loadedLang;
+    private string? _loadedId;
     private VoskRecognizer? _rec;
 
     /// <summary>Raised on the thread feeding audio.</summary>
@@ -20,21 +21,22 @@ public sealed class RecognitionEngine : IDisposable
     public bool IsModelLoaded(string lang) => _loadedLang == lang && _model != null;
 
     /// <summary>Loads (or switches) the acoustic model. Blocking — call from a worker thread.</summary>
-    public void LoadModel(string lang)
+    public void LoadModel(string lang, string modelId)
     {
-        if (IsModelLoaded(lang)) return;
+        if (IsModelLoaded(lang) && _loadedId == modelId) return;
         _rec?.Dispose(); _rec = null;
         _model?.Dispose();
-        var path = ModelCatalog.ModelPath(lang);
-        if (!ModelCatalog.IsInstalled(lang))
+        var path = ModelCatalog.PathOf(modelId);
+        if (!Directory.Exists(path))
             throw new DirectoryNotFoundException($"Model not installed: {path}");
         _model = new Model(path);
         _loadedLang = lang;
+        _loadedId = modelId;
     }
 
-    public void StartSession(string lang)
+    public void StartSession(string lang, string modelId)
     {
-        LoadModel(lang);
+        LoadModel(lang, modelId);
         _rec?.Dispose();
         _rec = new VoskRecognizer(_model, 16000f);
         _rec.SetWords(true);

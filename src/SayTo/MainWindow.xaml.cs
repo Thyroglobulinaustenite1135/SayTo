@@ -8,8 +8,15 @@ using System.Windows.Threading;
 using SayTo.Services;
 using WinForms = System.Windows.Forms;
 using Application = System.Windows.Application;
+using Brush = System.Windows.Media.Brush;
+using Button = System.Windows.Controls.Button;
 using Clipboard = System.Windows.Clipboard;
 using Ellipse = System.Windows.Shapes.Ellipse;
+using FlowDirection = System.Windows.FlowDirection;
+using FontFamily = System.Windows.Media.FontFamily;
+using MessageBox = System.Windows.MessageBox;
+using Orientation = System.Windows.Controls.Orientation;
+using Path = System.Windows.Shapes.Path;
 using Rectangle = System.Windows.Shapes.Rectangle;
 using Shape = System.Windows.Shapes.Shape;
 
@@ -23,7 +30,12 @@ public partial class MainWindow : Window
     private IntPtr _lastExternal;
     private HwndSource? _source;
 
-    private string _committed = "";
+    // live text is inserted at the caret, so user edits and manual newlines survive
+    private int _insertPos;
+    private int _liveLen;
+    private bool _reanchor;
+    private readonly Dictionary<string, TextBlock> _rowStatus = new();
+
     private volatile float _level;
     private readonly DispatcherTimer _levelTimer;
     private readonly List<Rectangle> _bars = new();
@@ -53,6 +65,7 @@ public partial class MainWindow : Window
         _controller.Failed += code => FlashStatus(L10n.Tr(code), true);
 
         BuildBars();
+        ApplyTextDirection();
         ApplyTexts();
         InitSegStates();
         InitSettingsPanel();
@@ -161,6 +174,10 @@ public partial class MainWindow : Window
             ShowSetup();
             return;
         }
+        // new text goes where the caret is — user edits and newlines are kept
+        _insertPos = Transcript.CaretIndex;
+        _liveLen = 0;
+        _reanchor = false;
         await _controller.StartAsync(mode, target);
     }
 
@@ -168,21 +185,45 @@ public partial class MainWindow : Window
 
     private void OnPartial(string text)
     {
-        if (_controller.Mode == DictationMode.Global)
+        if (_reanchor)
         {
-            _overlay?.SetPartial(text);
+            // user pressed Enter mid-session: drop the in-flight partial and
+            // continue on the new line, where the caret now is
+            var t0 = StripLive(Transcript.Text);
+            Transcript.Text = t0;
+            _insertPos = Math.Min(Transcript.CaretIndex, t0.Length);
+            _liveLen = 0;
+            _reanchor = false;
         }
-        else
-        {
-            SetTranscript((_committed + " " + text).Trim());
-        }
+
+        var cur = StripLive(Transcript.Text);
+        _insertPos = Math.Clamp(_insertPos, 0, cur.Length);
+        cur = cur.Insert(_insertPos, text);
+        Transcript.Text = cur;
+        Transcript.CaretIndex = _insertPos + text.Length;
+        _liveLen = text.Length;
+
+        if (_controller.Mode == DictationMode.Global) _overlay?.SetPartial(text);
     }
 
     private void OnFinalChunk(string text)
     {
-        _committed = (_committed + " " + text).Trim();
-        if (_controller.Mode != DictationMode.Global)
-            SetTranscript(_committed);
+        var cur = StripLive(Transcript.Text);
+        _insertPos = Math.Clamp(_insertPos, 0, cur.Length);
+        cur = cur.Insert(_insertPos, text + " ");
+        Transcript.Text = cur;
+        _insertPos += text.Length + 1;
+        _liveLen = 0;
+        Transcript.CaretIndex = _insertPos;
+    }
+
+    /// <summary>Removes the currently shown live partial from the text.</summary>
+    private string StripLive(string text)
+    {
+        if (_liveLen <= 0) return text;
+        _insertPos = Math.Clamp(_insertPos, 0, text.Length);
+        if (_insertPos + _liveLen > text.Length) { _liveLen = 0; return text; }
+        return text.Remove(_insertPos, _liveLen);
     }
 
     private void OnStateChanged(DictationState state) => UpdateStatusForState();
@@ -190,6 +231,7 @@ public partial class MainWindow : Window
     private void OnCompleted(DictationResult result)
     {
         _overlay?.HideOverlay();
+        _liveLen = 0;
 
         if (result.Cancelled)
         {
@@ -197,14 +239,9 @@ public partial class MainWindow : Window
         }
         else if (result.Mode == DictationMode.Global)
         {
-            // keep a copy in the main window too
-            if (result.Text.Length > 0)
-                SetTranscript((_committed + " " + result.Text).Trim());
-
             if (result.Typed) FlashStatus(L10n.Tr("msg.inserted"), false);
             else if (result.Text.Length > 0) FlashStatus(L10n.Tr("msg.insertfailed"), true);
         }
-        _committed = Transcript.Text.Trim();
     }
 
     private void UpdateStatusForState()
@@ -316,13 +353,6 @@ public partial class MainWindow : Window
 
     // ================= transcript & actions =================
 
-    private void SetTranscript(string text)
-    {
-        Transcript.Text = text;
-        Transcript.CaretIndex = Transcript.Text.Length;
-        Transcript.ScrollToEnd();
-    }
-
     private void Transcript_TextChanged(object sender, TextChangedEventArgs e) =>
         Placeholder.Visibility = Transcript.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
 
@@ -334,8 +364,8 @@ public partial class MainWindow : Window
 
     private void BtnClear_Click(object sender, RoutedEventArgs e)
     {
-        _committed = "";
-        SetTranscript("");
+        Transcript.Clear();
+        Transcript.CaretIndex = 0;
     }
 
     protected override void OnDeactivated(EventArgs e)
@@ -368,6 +398,11 @@ public partial class MainWindow : Window
             _controller.Stop();
             e.Handled = true;
         }
+        else if (e.Key == System.Windows.Input.Key.Enter && _controller.State != DictationState.Idle)
+        {
+            // continue dictating on the new line the user just created
+            _reanchor = true;
+        }
     }
 
     private void FlashStatus(string message, bool isError)
@@ -397,9 +432,19 @@ public partial class MainWindow : Window
         _controller.Lang = lang;
         App.Settings.RecognizeLanguage = lang;
         SettingsStore.Save(App.Settings);
+        ApplyTextDirection();
         UpdateStatusForState();
 
         if (!ModelCatalog.IsInstalled(lang)) ShowSetup(); else HideSetup();
+    }
+
+    /// <summary>Persian dictation text flows right-to-left, English left-to-right;
+    /// the window layout itself always stays LTR.</summary>
+    private void ApplyTextDirection()
+    {
+        var fd = _controller.Lang == "fa" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        Transcript.FlowDirection = fd;
+        Placeholder.FlowDirection = fd;
     }
 
     // ================= model setup overlay =================
@@ -516,6 +561,7 @@ public partial class MainWindow : Window
         }
         ChkAutoStop.IsChecked = App.Settings.AutoStopOnSilence;
         SlAutoStop.Value = App.Settings.AutoStopSeconds;
+        UpdateAutoStopLabel();
         UpdateAutoStopRow();
         ChkInsertAfter.IsChecked = App.Settings.InsertAfterGlobalDictation;
 
@@ -527,7 +573,11 @@ public partial class MainWindow : Window
     private void UpdateAutoStopRow() =>
         AutoStopRow.Visibility = App.Settings.AutoStopOnSilence ? Visibility.Visible : Visibility.Collapsed;
 
-    private void BtnSettings_Click(object sender, RoutedEventArgs e) => SettingsPopup.IsOpen = true;
+    private void BtnSettings_Click(object sender, RoutedEventArgs e)
+    {
+        BuildModelRows();
+        SettingsPopup.IsOpen = true;
+    }
 
     private void HotKey_Changed(object sender, RoutedEventArgs e)
     {
@@ -552,9 +602,14 @@ public partial class MainWindow : Window
         // fires during XAML parse (min-clamp) before settings are loaded — ignore
         if (!_ready || SlAutoStop == null) return;
         App.Settings.AutoStopSeconds = SlAutoStop.Value;
-        if (LblAutoStopSec != null)
-            LblAutoStopSec.Text = $"{SlAutoStop.Value:0.#} " + L10n.Tr("settings.autostop.sec");
+        UpdateAutoStopLabel();
         SettingsStore.Save(App.Settings);
+    }
+
+    private void UpdateAutoStopLabel()
+    {
+        if (LblAutoStopSec == null) return;
+        LblAutoStopSec.Text = $"{App.Settings.AutoStopSeconds:0.#} " + L10n.Tr("settings.autostop.sec");
     }
 
     private void InsertAfter_Changed(object sender, RoutedEventArgs e)
@@ -582,11 +637,180 @@ public partial class MainWindow : Window
         catch { }
     }
 
+    // ================= models management (settings) =================
+
+    private async Task<bool> DownloadCoreAsync(SpeechModel model, IProgress<DownloadProgress> progress)
+    {
+        try
+        {
+            await ModelManager.Instance.EnsureDownloadedAsync(model, progress, CancellationToken.None);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private void BuildModelRows()
+    {
+        if (ModelsPanel == null) return;
+        ModelsPanel.Children.Clear();
+        _rowStatus.Clear();
+
+        foreach (var m in ModelCatalog.All)
+        {
+            var installed = ModelCatalog.IsIdInstalled(m.Id);
+            var activeId = m.Lang == "en" ? App.Settings.ActiveEnModel : App.Settings.ActiveFaModel;
+            var isActive = installed && activeId == m.Id;
+
+            var info = new StackPanel { VerticalAlignment = VerticalAlignment.Center, MaxWidth = 150 };
+            info.Children.Add(new TextBlock
+            {
+                Text = m.DisplayName,
+                FontSize = 11.5,
+                FontFamily = (FontFamily)FindResource("Font.Medium"),
+                TextTrimming = TextTrimming.CharacterEllipsis,
+            });
+            info.Children.Add(new TextBlock
+            {
+                Text = m.SizeLabel,
+                FontSize = 9.5,
+                Foreground = (Brush)FindResource("Brush.TextDim"),
+                Margin = new Thickness(0, 1, 0, 0),
+            });
+
+            var status = new TextBlock
+            {
+                FontSize = 9.5,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 8, 0),
+            };
+            if (isActive)
+            {
+                status.Text = L10n.Tr("model.active");
+                status.SetResourceReference(TextBlock.ForegroundProperty, "Brush.Good");
+            }
+            else if (installed)
+            {
+                status.Text = L10n.Tr("model.installed");
+                status.SetResourceReference(TextBlock.ForegroundProperty, "Brush.TextDim");
+            }
+            _rowStatus[m.Id] = status;
+
+            var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+            buttons.Children.Add(status);
+            if (installed && !isActive)
+                buttons.Children.Add(ModelIconBtn("Icon.Check", L10n.Tr("model.use"), UseModel_Click, m));
+            if (!installed)
+                buttons.Children.Add(ModelIconBtn("Icon.Download", L10n.Tr("setup.download"), DlModel_Click, m));
+            if (installed)
+                buttons.Children.Add(ModelIconBtn("Icon.Trash", L10n.Tr("model.delete"), DelModel_Click, m));
+
+            var row = new Grid { Margin = new Thickness(0, 8, 0, 0) };
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            Grid.SetColumn(info, 0);
+            Grid.SetColumn(buttons, 1);
+            row.Children.Add(info);
+            row.Children.Add(buttons);
+            ModelsPanel.Children.Add(row);
+        }
+    }
+
+    private Button ModelIconBtn(string iconKey, string toolTip, RoutedEventHandler onClick, SpeechModel model)
+    {
+        var b = new Button
+        {
+            Style = (Style)FindResource("IconButton"),
+            Width = 28,
+            Height = 26,
+            Tag = model,
+            ToolTip = toolTip,
+            Margin = new Thickness(2, 0, 0, 0),
+            Content = new Path
+            {
+                Style = (Style)FindResource("StrokeIcon"),
+                Data = (Geometry)FindResource(iconKey),
+                Width = 15,
+                Height = 15,
+            },
+        };
+        b.Click += onClick;
+        return b;
+    }
+
+    private async void DlModel_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_ready) return;
+        var btn = (Button)sender;
+        var m = (SpeechModel)btn.Tag;
+        var status = _rowStatus[m.Id];
+
+        btn.IsEnabled = false;
+        status.Text = L10n.Tr("setup.downloading");
+        status.SetResourceReference(TextBlock.ForegroundProperty, "Brush.TextDim");
+
+        var progress = new Progress<DownloadProgress>(p =>
+        {
+            if (status == null) return;
+            if (p.Phase == "extract") status.Text = L10n.Tr("setup.extracting");
+            else if (p.Percent >= 0) status.Text = $"{p.Percent:F0}%";
+        });
+
+        var ok = await DownloadCoreAsync(m, progress);
+        if (ok)
+        {
+            status.Text = L10n.Tr("setup.done");
+            status.SetResourceReference(TextBlock.ForegroundProperty, "Brush.Good");
+            UpdateStatusForState();
+        }
+        else
+        {
+            status.Text = L10n.Tr("setup.failed");
+            status.SetResourceReference(TextBlock.ForegroundProperty, "Brush.Danger");
+        }
+        BuildModelRows();
+    }
+
+    private void DelModel_Click(object sender, RoutedEventArgs e)
+    {
+        var m = (SpeechModel)((Button)sender).Tag;
+        var answer = MessageBox.Show(L10n.Tr("model.delete.confirm") + $"\n\n{m.DisplayName} · {m.SizeLabel}",
+            "SayTo", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (answer != MessageBoxResult.Yes) return;
+
+        if (_controller.State != DictationState.Idle) _controller.Stop(true);
+        try { Directory.Delete(ModelCatalog.PathOf(m.Id), true); } catch { }
+
+        // if the deleted model was the active one, fall back to the compact model
+        if (m.Lang == "en" && App.Settings.ActiveEnModel == m.Id) App.Settings.ActiveEnModel = ModelCatalog.En.Id;
+        if (m.Lang == "fa" && App.Settings.ActiveFaModel == m.Id) App.Settings.ActiveFaModel = ModelCatalog.Fa.Id;
+        SettingsStore.Save(App.Settings);
+
+        FlashStatus(L10n.Tr("msg.modeldeleted"), false);
+        UpdateStatusForState();
+        BuildModelRows();
+        if (!ModelCatalog.IsInstalled(_controller.Lang)) ShowSetup();
+    }
+
+    private void UseModel_Click(object sender, RoutedEventArgs e)
+    {
+        var m = (SpeechModel)((Button)sender).Tag;
+        if (m.Lang == "en") App.Settings.ActiveEnModel = m.Id;
+        else App.Settings.ActiveFaModel = m.Id;
+        SettingsStore.Save(App.Settings);
+        FlashStatus(L10n.Tr("msg.modelactive") + ": " + m.DisplayName, false);
+        BuildModelRows();
+    }
+
     // ================= localization =================
 
     private void ApplyTexts()
     {
         Title = L10n.Tr("app.title");
+        LblSpeechLang.Text = L10n.Tr("title.speech");
+        LblSpeechLang.ToolTip = L10n.Tr("title.speech.hint");
         Placeholder.Text = L10n.Tr("placeholder");
         TxtCopy.Text = L10n.Tr("btn.copy");
         TxtClear.Text = L10n.Tr("btn.clear");
@@ -601,14 +825,16 @@ public partial class MainWindow : Window
         SettingsTitle.Text = L10n.Tr("settings.title");
         LblHotkey.Text = L10n.Tr("settings.hotkey");
         ChkAutoStop.Content = L10n.Tr("settings.autostop");
-        LblAutoStopSec.Text = $"{SlAutoStop?.Value:0.#} " + L10n.Tr("settings.autostop.sec");
+        UpdateAutoStopLabel();
         ChkInsertAfter.Content = L10n.Tr("settings.insertafter");
+        LblModelsSection.Text = L10n.Tr("settings.models.section");
         LblUiLang.Text = UiLangLabel();
         TxtModels.Text = L10n.Tr("settings.models");
         TxtAbout.Text = L10n.Tr("settings.about");
 
         RefreshSetupRow("fa");
         RefreshSetupRow("en");
+        BuildModelRows();
         UpdateStatusForState();
     }
 

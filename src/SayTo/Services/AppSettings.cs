@@ -8,6 +8,8 @@ public sealed class AppSettings
     public string UiLanguage { get; set; } = "fa";          // "fa" | "en"
     public string Theme { get; set; } = "dark";             // "dark" | "light"
     public string RecognizeLanguage { get; set; } = "fa";   // last used recognition language
+    public string ActiveFaModel { get; set; } = "vosk-model-small-fa-0.42";
+    public string ActiveEnModel { get; set; } = "vosk-model-small-en-us-0.15";
     public string HotKey { get; set; } = "Ctrl+Alt+S";      // preset name
     public bool AutoStopOnSilence { get; set; } = true;
     public double AutoStopSeconds { get; set; } = 2.0;

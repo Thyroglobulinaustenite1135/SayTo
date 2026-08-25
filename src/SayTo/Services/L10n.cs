@@ -43,6 +43,8 @@ public static class L10n
 
         ["seg.fa"] = ("فارسی", "فارسی"),
         ["seg.en"] = ("English", "English"),
+        ["title.speech"] = ("زبان گفتار:", "Speech:"),
+        ["title.speech.hint"] = ("مدل تشخیص گفتار برای دیکته", "Recognition model for dictation"),
 
         ["setup.title"] = ("دانلود مدل تشخیص گفتار", "Download speech models"),
         ["setup.desc"] = ("برای دیکته‌ی آفلاین، مدل هر زبان یک‌بار دانلود می‌شود. پس از آن اینترنت لازم نیست.",
@@ -70,6 +72,14 @@ public static class L10n
         ["settings.autostop.sec"] = ("ثانیه سکوت", "s of silence"),
         ["settings.insertafter"] = ("پس از دیکته‌ی سراسری، متن تایپ شود", "Type text after global dictation"),
         ["settings.models"] = ("پوشه‌ی مدل‌ها", "Models folder"),
+        ["settings.models.section"] = ("مدل‌های گفتار", "Speech models"),
+        ["model.use"] = ("فعال‌سازی این مدل", "Activate this model"),
+        ["model.active"] = ("فعال", "Active"),
+        ["model.installed"] = ("نصب‌شده", "Installed"),
+        ["model.delete"] = ("حذف مدل", "Delete model"),
+        ["model.delete.confirm"] = ("این مدل از سیستم حذف شود؟", "Delete this model from the system?"),
+        ["msg.modelactive"] = ("مدل گفتار فعال شد", "Speech model activated"),
+        ["msg.modeldeleted"] = ("مدل حذف شد", "Model deleted"),
         ["settings.about"] = ("دیکته‌ی آفلاین با Vosk — بدون ارسال هیچ صدایی به اینترنت",
                               "Offline dictation powered by Vosk — no audio ever leaves your device"),
 

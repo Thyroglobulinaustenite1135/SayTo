@@ -25,7 +25,7 @@
     <SolidColorBrush x:Key="Brush.Scrim" Color="#66000000" />
     <SolidColorBrush x:Key="Brush.TitlebarHover" Color="#E8EAF3" />
     <SolidColorBrush x:Key="Brush.Caret" Color="#7C6CF6" />
-    <SolidColorBrush x:Key="Brush.Selection" Color="#337C6CF6" />
+    <SolidColorBrush x:Key="Brush.Selection" Color="#C4B5FD" />
 
     <LinearGradientBrush x:Key="Brush.AccentGrad" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Color="{StaticResource Col.Accent}" Offset="0" />

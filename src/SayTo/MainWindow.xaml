@@ -56,6 +56,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <Image Source="pack://application:,,,/SayTo;component/Assets/logo.png"
@@ -63,7 +64,10 @@
                 <TextBlock Grid.Column="1" Text="SayTo" FontFamily="{StaticResource Font.Bold}"
                            FontSize="14" VerticalAlignment="Center" />
 
-                <Border Grid.Column="3" Background="{DynamicResource Brush.Card}"
+                <TextBlock x:Name="LblSpeechLang" Grid.Column="3" FontSize="11"
+                           Foreground="{DynamicResource Brush.TextDim}" VerticalAlignment="Center"
+                           Margin="0,0,8,0" ToolTipService.InitialShowDelay="200" />
+                <Border Grid.Column="4" Background="{DynamicResource Brush.Card}"
                         CornerRadius="9" Padding="3" VerticalAlignment="Center" Margin="0,0,10,0">
                     <StackPanel Orientation="Horizontal">
                         <RadioButton x:Name="SegFa" Content="فارسی" Style="{StaticResource SegRadio}"
@@ -73,22 +77,22 @@
                     </StackPanel>
                 </Border>
 
-                <Button x:Name="BtnTheme" Grid.Column="4" Style="{StaticResource IconButton}"
+                <Button x:Name="BtnTheme" Grid.Column="5" Style="{StaticResource IconButton}"
                         Click="BtnTheme_Click" Margin="0,0,2,0">
                     <Grid>
                         <Path x:Name="IconSun" Data="{StaticResource Icon.Sun}" Style="{StaticResource StrokeIcon}" Visibility="Collapsed" />
                         <Path x:Name="IconMoon" Data="{StaticResource Icon.Moon}" Style="{StaticResource StrokeIcon}" />
                     </Grid>
                 </Button>
-                <Button x:Name="BtnSettings" Grid.Column="5" Style="{StaticResource IconButton}"
+                <Button x:Name="BtnSettings" Grid.Column="6" Style="{StaticResource IconButton}"
                         Click="BtnSettings_Click" Margin="0,0,2,0">
                     <Path Data="{StaticResource Icon.Sliders}" Style="{StaticResource StrokeIcon}" />
                 </Button>
-                <Button x:Name="BtnMin" Grid.Column="6" Style="{StaticResource IconButton}"
+                <Button x:Name="BtnMin" Grid.Column="7" Style="{StaticResource IconButton}"
                         Click="BtnMin_Click" Margin="0,0,2,0">
                     <Path Data="{StaticResource Icon.Min}" Style="{StaticResource StrokeIcon}" />
                 </Button>
-                <Button x:Name="BtnClose" Grid.Column="7" Style="{StaticResource CloseButton}"
+                <Button x:Name="BtnClose" Grid.Column="8" Style="{StaticResource CloseButton}"
                         Click="BtnClose_Click" Margin="0,0,10,0">
                     <Path Data="{StaticResource Icon.Close}" Style="{StaticResource StrokeIcon}" />
                 </Button>
@@ -114,6 +118,7 @@
                                  FontSize="15" Foreground="{DynamicResource Brush.Text}"
                                  CaretBrush="{DynamicResource Brush.Caret}"
                                  SelectionBrush="{DynamicResource Brush.Selection}"
+                                 SelectionOpacity="1"
                                  FontFamily="{StaticResource Font.Base}"
                                  TextChanged="Transcript_TextChanged" />
                     </Grid>
@@ -289,71 +294,78 @@
                     </Border>
                 </Grid>
             </Grid>
-            <!-- ============ settings popup ============ -->
-            <Popup x:Name="SettingsPopup" PlacementTarget="{Binding ElementName=BtnSettings}"
-                   Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
-        <Border Width="310" Background="{DynamicResource Brush.Card}" CornerRadius="12"
+    <!-- ============ settings popup ============ -->
+    <Popup x:Name="SettingsPopup" PlacementTarget="{Binding ElementName=BtnSettings}"
+           Placement="Bottom" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+        <Border Width="330" Background="{DynamicResource Brush.Card}" CornerRadius="12"
                 BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" Padding="18"
                 Margin="0,6,14,0">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="22" ShadowDepth="0" Opacity="0.45" />
             </Border.Effect>
-            <StackPanel>
-                <TextBlock x:Name="SettingsTitle" FontSize="14"
-                           FontFamily="{StaticResource Font.Bold}" />
+            <ScrollViewer MaxHeight="560" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock x:Name="SettingsTitle" FontSize="14"
+                               FontFamily="{StaticResource Font.Bold}" />
 
-                <TextBlock x:Name="LblHotkey" Margin="0,14,0,6" FontSize="11.5"
-                           Foreground="{DynamicResource Brush.TextDim}" />
-                <Border Background="{DynamicResource Brush.Window}" CornerRadius="9"
-                        BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" Padding="3">
-                    <StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="Hk0" Style="{StaticResource SegRadio}" GroupName="hk"
-                                     Checked="HotKey_Changed" />
-                        <RadioButton x:Name="Hk1" Style="{StaticResource SegRadio}" GroupName="hk"
-                                     Checked="HotKey_Changed" />
-                        <RadioButton x:Name="Hk2" Style="{StaticResource SegRadio}" GroupName="hk"
-                                     Checked="HotKey_Changed" />
+                    <TextBlock x:Name="LblHotkey" Margin="0,14,0,6" FontSize="11.5"
+                               Foreground="{DynamicResource Brush.TextDim}" />
+                    <Border Background="{DynamicResource Brush.Window}" CornerRadius="9"
+                            BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" Padding="3">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="Hk0" Style="{StaticResource SegRadio}" GroupName="hk"
+                                         Checked="HotKey_Changed" />
+                            <RadioButton x:Name="Hk1" Style="{StaticResource SegRadio}" GroupName="hk"
+                                         Checked="HotKey_Changed" />
+                            <RadioButton x:Name="Hk2" Style="{StaticResource SegRadio}" GroupName="hk"
+                                         Checked="HotKey_Changed" />
+                        </StackPanel>
+                    </Border>
+
+                    <CheckBox x:Name="ChkAutoStop" Style="{StaticResource ModernCheck}"
+                              Margin="0,14,0,0" Checked="AutoStop_Changed" Unchecked="AutoStop_Changed" />
+                    <StackPanel x:Name="AutoStopRow" Orientation="Horizontal" Margin="26,8,0,0">
+                        <Slider x:Name="SlAutoStop" Style="{StaticResource ModernSlider}" Width="130"
+                                Minimum="1" Maximum="6" TickFrequency="0.5" IsSnapToTickEnabled="True"
+                                ValueChanged="AutoStopSlider_Changed" VerticalAlignment="Center" />
+                        <TextBlock x:Name="LblAutoStopSec" Margin="10,0,0,0" FontSize="11.5"
+                                   Foreground="{DynamicResource Brush.TextDim}" VerticalAlignment="Center" />
                     </StackPanel>
-                </Border>
 
-                <CheckBox x:Name="ChkAutoStop" Style="{StaticResource ModernCheck}"
-                          Margin="0,14,0,0" Checked="AutoStop_Changed" Unchecked="AutoStop_Changed" />
-                <StackPanel x:Name="AutoStopRow" Orientation="Horizontal" Margin="26,8,0,0">
-                    <Slider x:Name="SlAutoStop" Style="{StaticResource ModernSlider}" Width="130"
-                            Minimum="1" Maximum="6" TickFrequency="0.5" IsSnapToTickEnabled="True"
-                            ValueChanged="AutoStopSlider_Changed" VerticalAlignment="Center" />
-                    <TextBlock x:Name="LblAutoStopSec" Margin="10,0,0,0" FontSize="11.5"
-                               Foreground="{DynamicResource Brush.TextDim}" VerticalAlignment="Center" />
+                    <CheckBox x:Name="ChkInsertAfter" Style="{StaticResource ModernCheck}"
+                              Margin="0,12,0,0" Checked="InsertAfter_Changed" Unchecked="InsertAfter_Changed" />
+
+                    <!-- ===== speech models management ===== -->
+                    <TextBlock x:Name="LblModelsSection" Margin="0,18,0,0" FontSize="12"
+                               FontFamily="{StaticResource Font.Medium}" />
+                    <StackPanel x:Name="ModelsPanel" Margin="0,2,0,0" />
+
+                    <TextBlock x:Name="LblUiLang" Margin="0,18,0,6" FontSize="11.5"
+                               Foreground="{DynamicResource Brush.TextDim}" />
+                    <Border Background="{DynamicResource Brush.Window}" CornerRadius="9"
+                            BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" Padding="3"
+                            HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="Ux1" Style="{StaticResource SegRadio}" GroupName="ux"
+                                         Checked="UiLang_Changed" />
+                            <RadioButton x:Name="Ux2" Style="{StaticResource SegRadio}" GroupName="ux"
+                                         Checked="UiLang_Changed" />
+                        </StackPanel>
+                    </Border>
+
+                    <Button x:Name="BtnModels" Style="{StaticResource GhostButton}" Margin="0,16,0,0"
+                            HorizontalAlignment="Left" Click="BtnModels_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Path Data="{StaticResource Icon.Folder}" Style="{StaticResource StrokeIcon}" />
+                            <TextBlock x:Name="TxtModels" Margin="7,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <TextBlock x:Name="TxtAbout" Margin="0,12,0,0" FontSize="10.5"
+                               Foreground="{DynamicResource Brush.TextDim}" Opacity="0.85"
+                               TextWrapping="Wrap" />
                 </StackPanel>
-
-                <CheckBox x:Name="ChkInsertAfter" Style="{StaticResource ModernCheck}"
-                          Margin="0,12,0,0" Checked="InsertAfter_Changed" Unchecked="InsertAfter_Changed" />
-
-                <TextBlock x:Name="LblUiLang" Margin="0,16,0,6" FontSize="11.5"
-                           Foreground="{DynamicResource Brush.TextDim}" />
-                <Border Background="{DynamicResource Brush.Window}" CornerRadius="9"
-                        BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" Padding="3"
-                        HorizontalAlignment="Left">
-                    <StackPanel Orientation="Horizontal">
-                        <RadioButton x:Name="Ux1" Style="{StaticResource SegRadio}" GroupName="ux"
-                                     Checked="UiLang_Changed" />
-                        <RadioButton x:Name="Ux2" Style="{StaticResource SegRadio}" GroupName="ux"
-                                     Checked="UiLang_Changed" />
-                    </StackPanel>
-                </Border>
-
-                <Button x:Name="BtnModels" Style="{StaticResource GhostButton}" Margin="0,16,0,0"
-                        HorizontalAlignment="Left" Click="BtnModels_Click">
-                    <StackPanel Orientation="Horizontal">
-                        <Path Data="{StaticResource Icon.Folder}" Style="{StaticResource StrokeIcon}" />
-                        <TextBlock x:Name="TxtModels" Margin="7,0,0,0" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
-
-                <TextBlock x:Name="TxtAbout" Margin="0,12,0,0" FontSize="10.5"
-                           Foreground="{DynamicResource Brush.TextDim}" Opacity="0.85"
-                           TextWrapping="Wrap" />
-            </StackPanel>
+            </ScrollViewer>
         </Border>
     </Popup>
         </Grid>
