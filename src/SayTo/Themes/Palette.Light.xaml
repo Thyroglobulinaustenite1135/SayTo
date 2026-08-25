@@ -1,0 +1,35 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="Col.Window">#F3F4F9</Color>
+    <Color x:Key="Col.Card">#FFFFFF</Color>
+    <Color x:Key="Col.CardHover">#ECEEF6</Color>
+    <Color x:Key="Col.Border">#E3E5F0</Color>
+    <Color x:Key="Col.Text">#1F2328</Color>
+    <Color x:Key="Col.TextDim">#6B7280</Color>
+    <Color x:Key="Col.Accent">#7C6CF6</Color>
+    <Color x:Key="Col.Accent2">#5C42E8</Color>
+    <Color x:Key="Col.Danger">#DC2626</Color>
+    <Color x:Key="Col.Good">#059669</Color>
+
+    <SolidColorBrush x:Key="Brush.Window" Color="{StaticResource Col.Window}" />
+    <SolidColorBrush x:Key="Brush.Card" Color="{StaticResource Col.Card}" />
+    <SolidColorBrush x:Key="Brush.CardHover" Color="{StaticResource Col.CardHover}" />
+    <SolidColorBrush x:Key="Brush.Border" Color="{StaticResource Col.Border}" />
+    <SolidColorBrush x:Key="Brush.Text" Color="{StaticResource Col.Text}" />
+    <SolidColorBrush x:Key="Brush.TextDim" Color="{StaticResource Col.TextDim}" />
+    <SolidColorBrush x:Key="Brush.Accent" Color="{StaticResource Col.Accent}" />
+    <SolidColorBrush x:Key="Brush.Accent2" Color="{StaticResource Col.Accent2}" />
+    <SolidColorBrush x:Key="Brush.Danger" Color="{StaticResource Col.Danger}" />
+    <SolidColorBrush x:Key="Brush.Good" Color="{StaticResource Col.Good}" />
+    <SolidColorBrush x:Key="Brush.Scrim" Color="#66000000" />
+    <SolidColorBrush x:Key="Brush.TitlebarHover" Color="#E8EAF3" />
+    <SolidColorBrush x:Key="Brush.Caret" Color="#7C6CF6" />
+    <SolidColorBrush x:Key="Brush.Selection" Color="#337C6CF6" />
+
+    <LinearGradientBrush x:Key="Brush.AccentGrad" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource Col.Accent}" Offset="0" />
+        <GradientStop Color="{StaticResource Col.Accent2}" Offset="1" />
+    </LinearGradientBrush>
+
+</ResourceDictionary>

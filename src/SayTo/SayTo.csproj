@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SayTo</RootNamespace>
+    <AssemblyName>SayTo</AssemblyName>
+    <Version>1.0.0</Version>
+    <Product>SayTo</Product>
+    <Description>Offline speech-to-text for Windows (Persian &amp; English)</Description>
+    <ApplicationIcon>Assets\sayto.ico</ApplicationIcon>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Vosk" Version="0.3.38" />
+    <PackageReference Include="NAudio" Version="3.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\sayto.ico" />
+    <Resource Include="Assets\logo.png" />
+    <Resource Include="Assets\fonts\*.ttf" />
+  </ItemGroup>
+
+</Project>

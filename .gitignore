@@ -1,0 +1,24 @@
+# Build results
+bin/
+obj/
+dist/
+publish/
+
+# User-specific files
+*.user
+*.suo
+*.vs/
+.vs/
+
+# Test artifacts
+test/*.wav
+selftest_result.txt
+
+# Speech models (downloaded at runtime, ~50MB each) — never commit
+models/
+*.zip
+*.zip.part
+
+# OS junk
+Thumbs.db
+.DS_Store
